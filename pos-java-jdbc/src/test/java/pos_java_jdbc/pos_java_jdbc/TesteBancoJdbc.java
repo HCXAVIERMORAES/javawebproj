@@ -11,8 +11,10 @@ public class TesteBancoJdbc {
 	/*Para executar apenar um metodo dar-se 2 clik nele e mando executar*/
 	
 	//metodo para testar a coneão. anotação de teste
+	/*Ao usar o id no banco de forma automatica, não é mais necessario passa-lo na aplicação podendo então se 
+	 * retirado**/
 	@Test
-	public void initBanco() {
+	public void initBanco() { //metodo de insert
 		//após testar a conexão esse objeto não mais é necessário
 		//SingleConnection.getConnection(); //chama a conexão
 		
@@ -22,9 +24,9 @@ public class TesteBancoJdbc {
 		UserposJava userposJava = new UserposJava();
 		
 		//setando os dados para deixa-los dinámico
-		 userposJava.setId(6L);
-		 userposJava.setNome("Bebel");
-		 userposJava.setEmail("bebel@yahoo.com.br");
+		 //userposJava.setId(6L); apos o banco estar com id automatico
+		 userposJava.setNome("Id automatico");
+		 userposJava.setEmail("testeidauto@yahoo.com.br");
 		
 		//setando os objetos para eles terem dados
 		 userPosDAO.salvar(userposJava); //chamando o metodo para salvar no BD
@@ -66,11 +68,28 @@ public class TesteBancoJdbc {
 		UserPosDAO dao = new UserPosDAO();
 		
 		try {
-			UserposJava userposJava = dao.buscar(2L);
+			UserposJava userposJava = dao.buscar(5L);
 			System.out.println(userposJava);
 			
 		} catch (Exception e) {
 			
+			e.printStackTrace();
+		}
+	}
+	
+	//meto de teste do update
+	/* faz-se um método para atualizar buscando 1ª no DAO
+	 * Depois se faz uma consulta ao BD e com isso tendo o Id 
+	 * Seta-se o atributo a ser mudado e chama o metodo de atualizar no BD**/
+	@Test
+	public void initAtualizar() {
+		try {
+			UserPosDAO dao = new UserPosDAO();
+			UserposJava objetoBanco = dao.buscar(2L);
+			objetoBanco.setNome("nome mudado com metodo atualizar");
+			dao.atualizar(objetoBanco);
+			
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
