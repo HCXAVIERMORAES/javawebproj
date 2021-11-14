@@ -26,10 +26,13 @@ public class UserPosDAO {
 		connection = SingleConnection.getConnection(); // 2ª
 	}
 
-	/*metodo de inserção. O metodo rebe um objeto UserposJava (classe), o objeto  com os dados
-	 * apos o id esta automatico não é necessario informa-lo para o insert, com id statico
-	 * (String sql = "insert into userposjava (id , nome , email) values (?,?,?)";), podendo retira-lo
-	 * As correçoes é so para o insert**/
+	/*
+	 * metodo de inserção. O metodo rebe um objeto UserposJava (classe), o objeto
+	 * com os dados apos o id esta automatico não é necessario informa-lo para o
+	 * insert, com id statico (String sql =
+	 * "insert into userposjava (id , nome , email) values (?,?,?)";), podendo
+	 * retira-lo As correçoes é so para o insert
+	 **/
 	public void salvar(UserposJava userposJava) {
 		try {
 			// mondando o sql igual ao do banco, passando interrogaçoes no lugar dos
@@ -42,7 +45,8 @@ public class UserPosDAO {
 			 */
 			PreparedStatement insert = connection.prepareStatement(sql); // é quem faz o insert. ele recebe um sql
 			// passa-se os parámetro a serem passado na mesma posição do BD
-			//insert.setLong(1, userposJava.getId()); // id. retirado apos id ser automatico
+			// insert.setLong(1, userposJava.getId()); // id. retirado apos id ser
+			// automatico
 			insert.setString(1, userposJava.getNome()); // nome. de 2 passa par 1, ou seja a ordem deve ser corrigida
 			insert.setString(2, userposJava.getEmail()); // email
 			insert.execute(); // executa o insert
@@ -129,9 +133,10 @@ public class UserPosDAO {
 	/*
 	 * Cria método para atualizar deve receber os objetos atualizados, logo se passa
 	 * por parâmétro o UserposJava. String sql =
-	 * "update userposjava set nome = 'nome atualizado' where id = " + userposJava.getId(); sql puro.
-	 * faz-se a preparação da conexão iden aos outros, prepara a atualização do parâmetro,
-	 * executa o sql e faz-se o commit. com um try catch em um rollback caso ocorra algum erro
+	 * "update userposjava set nome = 'nome atualizado' where id = " +
+	 * userposJava.getId(); sql puro. faz-se a preparação da conexão iden aos
+	 * outros, prepara a atualização do parâmetro, executa o sql e faz-se o commit.
+	 * com um try catch em um rollback caso ocorra algum erro
 	 * 
 	 **/
 	public void atualizar(UserposJava userposJava) {
@@ -156,4 +161,33 @@ public class UserPosDAO {
 
 	}
 
+	/*
+	 * Método para deletar item pelo id, deve ter um rollback na coneção se houver
+	 * algum erro, um commit se estiver tudo certo e como os demais um
+	 * prepardstatema, e receb por paramentro um id
+	 **/
+	public void deletar(Long id) {
+
+		try {
+			
+			String sql = "delete from userposjava where id = "+ id;
+			PreparedStatement statement = connection.prepareStatement(sql);
+			statement.execute();
+			connection.commit();
+
+		} catch (Exception e) {
+			try {
+				
+				connection.rollback();
+				
+			} catch (SQLException e1) {
+
+				e1.printStackTrace();
+			}
+			
+			e.printStackTrace();
+		}
+
+	}
+		/*estes são os metodo que fecham o CRUD de aplicação**/
 }

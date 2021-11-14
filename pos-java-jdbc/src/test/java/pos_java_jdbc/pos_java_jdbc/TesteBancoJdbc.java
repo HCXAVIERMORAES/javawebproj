@@ -93,5 +93,18 @@ public class TesteBancoJdbc {
 			e.printStackTrace();
 		}
 	}
+	
+	//Método para deletar no BD
+	@Test
+	public void initDeletar() {
+		try {
+			
+			UserPosDAO dao = new UserPosDAO();		
+			dao.deletar(8L);
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 
 }
