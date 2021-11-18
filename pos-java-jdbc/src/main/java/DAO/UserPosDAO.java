@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import conexaojdbc.SingleConnection;
+import model.BeanUserFone;
+import model.Telefone;
 import model.UserposJava;
 
 public class UserPosDAO {
@@ -75,6 +77,34 @@ public class UserPosDAO {
 		}
 	}
 
+	/*TELEFONE	
+	 * Metodo de inserte da classe Telefone no BD tabela telefoneuser mesmo
+	 * raciocinio de salvar()
+	 **/
+	public void salvarTelefone(Telefone telefone) {//recebe um objeto de Telefone
+
+		try {
+			String sql = "INSERT INTO public.telefoneuser(numero, tipo, usuariopessoa) VALUES (?, ?, ?);";
+
+			PreparedStatement statement = connection.prepareStatement(sql);
+			statement.setString(1, telefone.getNumero());
+			statement.setString(2, telefone.getTipo());
+			statement.setLong(3, telefone.getUsuariopessoa());
+			statement.execute();
+			connection.commit();
+
+		} catch (Exception e) {
+			try {
+				connection.rollback();
+				
+			} catch (SQLException e1) {
+				e1.printStackTrace();
+			}
+			e.printStackTrace();
+		}
+
+	}
+
 	/*
 	 * Metodo de consulta ao BD, todos os dados. Usando uma lista do tipo
 	 * UserposJava
@@ -129,6 +159,47 @@ public class UserPosDAO {
 		return retorno;
 	}
 
+	/*INNER JOIN:
+	 *  monta-se uma classe(BeanUserFone) para auxiliar no sql, quebrando-o 
+	 * cria-se um metodo publico que retorna uma lista e recebe como parametro um idUser
+	 * cria-se a variavel do sql, e transcreve o inner join
+	 * */
+	public List<BeanUserFone> listaUserFone (Long idUser){
+		
+		List<BeanUserFone> beanUserFones = new ArrayList<BeanUserFone>(); 
+		
+		String sql = " select nome, numero, email from telefoneuser as fone ";
+		sql += "  inner join userposjava as userp ";
+		sql += " on fone.usuariopessoa = userp.id ";
+		sql += " where userp.id = " + idUser;
+		
+		try {
+			PreparedStatement statement = connection.prepareStatement(sql);//conexao 
+			ResultSet resultSet = statement.executeQuery(); //e consulta no banco
+			
+			while (resultSet.next()) { //enquanto houver resultado
+				
+				BeanUserFone userFone = new BeanUserFone();//para cada linha vai estanciar um novo objeto
+				userFone.setEmail(resultSet.getString("email")); //vai setar os dados 
+				userFone.setNome(resultSet.getString("nome"));
+				userFone.setNumero(resultSet.getString("numero"));
+				
+				beanUserFones.add(userFone); // e adicionar na lista
+				
+				//ao terminar o java da o retorno da lista
+			}
+			
+		} catch (Exception e) {
+
+			e.printStackTrace();
+		}
+		
+		
+		
+		return beanUserFones;
+	}
+	
+	
 	// atualizando o BD
 	/*
 	 * Cria método para atualizar deve receber os objetos atualizados, logo se passa
@@ -169,25 +240,56 @@ public class UserPosDAO {
 	public void deletar(Long id) {
 
 		try {
-			
-			String sql = "delete from userposjava where id = "+ id;
+
+			String sql = "delete from userposjava where id = " + id;
 			PreparedStatement statement = connection.prepareStatement(sql);
 			statement.execute();
 			connection.commit();
 
 		} catch (Exception e) {
 			try {
-				
+
 				connection.rollback();
-				
+
 			} catch (SQLException e1) {
 
 				e1.printStackTrace();
 			}
-			
+
 			e.printStackTrace();
 		}
 
 	}
-		/*estes são os metodo que fecham o CRUD de aplicação**/
+	
+	/*metodo para deletar dados em cascata de filhos e pais (tabelas ligadas por chaves estrangeiras) primeiro 
+	 * deleta a tabela filho e depois a tabela pai*/
+	
+	public void deleteFonesPorUser(Long idUser) {
+		
+		String sqlFones = "DELETE from telefoneuser where usuariopessoa = "+ idUser; //filho
+		String sqlUser = "DELETE from userposjava where id = "+ idUser; //pai
+		
+		try {
+			PreparedStatement preparedStatement = connection.prepareStatement(sqlFones); //1ª com o filho
+			preparedStatement.executeUpdate(); 
+			connection.commit();
+			
+			preparedStatement = connection.prepareStatement(sqlUser); //depois com o pai
+			preparedStatement.executeUpdate();
+			connection.commit();
+			
+		} catch (SQLException e) {
+			
+			e.printStackTrace();
+			
+			try {
+				connection.rollback();
+				
+			} catch (Exception e2) {
+				e2.printStackTrace();
+			}
+		}
+	}
+	
+	/* estes são os metodo que fecham o CRUD de aplicação **/
 }
